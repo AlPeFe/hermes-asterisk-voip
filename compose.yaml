@@ -1,0 +1,35 @@
+name: asterisk
+
+# Centralita Asterisk para la LAN (prueba de concepto).
+#   - Extensión 100 → MicroSIP de Alex   ·   101 → segundo softphone
+#   - Hermes origina llamadas por ARI (REST, solo 127.0.0.1:8088)
+#
+# network_mode: host a propósito — SIP y RTP no pasan por NAT de Docker, así que
+# Asterisk anuncia en el SDP la IP real del host (p. ej. 192.168.1.10) y no la 172.x del bridge,
+# que es la causa clásica de audio en una sola dirección.
+#
+# NO hay exposición a internet: el túnel de Cloudflare solo lleva TCP/HTTP y
+# aquí no se publica nada. Si algún día se quiere un troncal externo, hay que
+# abrir 5060/udp + 10000-10199/udp en el router.
+
+services:
+  asterisk:
+    image: andrius/asterisk:22
+    container_name: alpefe-asterisk
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      ASTERISK_UID: "1000"
+      ASTERISK_GID: "1000"
+    volumes:
+      - ./config/pjsip.conf:/etc/asterisk/pjsip.conf:ro
+      - ./config/extensions.conf:/etc/asterisk/extensions.conf:ro
+      - ./config/ari.conf:/etc/asterisk/ari.conf:ro
+      - ./config/http.conf:/etc/asterisk/http.conf:ro
+      - ./config/rtp.conf:/etc/asterisk/rtp.conf:ro
+      - ./config/logger.conf:/etc/asterisk/logger.conf:ro
+      # Solo los sonidos propios: NO se monta /var/lib/asterisk entero o se
+      # perderían los sonidos core de la imagen (hello-world y compañía).
+      - ./sounds/custom:/var/lib/asterisk/sounds/custom
+      - ./logs:/var/log/asterisk
+      - ./spool:/var/spool/asterisk

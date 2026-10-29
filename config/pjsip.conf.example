@@ -1,0 +1,62 @@
+; POC Asterisk LAN — endpoints PJSIP (extensiones 100 y 101)
+; Red: network_mode host, así que Asterisk ve la IP real del host (<HOST_LAN_IP>)
+; y el SDP anuncia la IP correcta para los softphones de la LAN.
+
+[global]
+type=global
+user_agent=hermes-asterisk-voip
+
+[transport-udp]
+type=transport
+protocol=udp
+bind=0.0.0.0:5060
+allow_reload=yes
+
+; ---------- plantillas ----------
+[endpoint-tpl](!)
+type=endpoint
+context=from-internal
+disallow=all
+allow=ulaw,alaw
+direct_media=no
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+ice_support=no
+; IP real del host en el SDP. Con network_mode host Asterisk ya ve la IP buena,
+; pero fijarla evita el audio en una sola dirección si algún día cambia la red.
+media_address=<HOST_LAN_IP>
+
+[auth-tpl](!)
+type=auth
+auth_type=userpass
+
+[aor-tpl](!)
+type=aor
+max_contacts=2
+remove_existing=yes
+maximum_expiration=3600
+
+; ---------- extensión 100 (MicroSIP de Alex) ----------
+[100](endpoint-tpl)
+auth=100
+aors=100
+callerid="Alex MicroSIP" <100>
+
+[100](auth-tpl)
+username=100
+password=CHANGE_ME_<extension>
+
+[100](aor-tpl)
+
+; ---------- extensión 101 (segundo softphone / pruebas) ----------
+[101](endpoint-tpl)
+auth=101
+aors=101
+callerid="Pruebas 101" <101>
+
+[101](auth-tpl)
+username=101
+password=CHANGE_ME_<extension>
+
+[101](aor-tpl)

@@ -1,0 +1,24 @@
+# ── Secretos: nunca versionados ─────────────────────────────────────────────
+config/pjsip.conf
+config/ari.conf
+credentials.txt
+*.env
+
+# ── Audio y grabaciones de prueba ───────────────────────────────────────────
+sounds/custom/*.wav
+spool/
+logs/
+!logs/.gitkeep
+!spool/.gitkeep
+!spool/monitor/.gitkeep
+
+# ── .NET ────────────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+.vs/
+.idea/
+
+# ── Varios ──────────────────────────────────────────────────────────────────
+.DS_Store
+*.swp
